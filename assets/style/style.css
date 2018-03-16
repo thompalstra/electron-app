@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+body, html{
+    background-color: #ddd;
+}
+
+
+x-sidebar{
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+
+    background-color: white;
+
+    width: 50%;
+    transform: translateX(-100%);
+    transition: .6s;
+}
+x-sidebar[show]{
+    transform: translateX(0%);
+}
+
+x-backdrop{
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,.1);
+}
+
+
+x-backdrop:not([show]){
+    pointer-events: none;
+    visibility: hidden;
+    opacity: 0;
+}
+
+[show] + x-backdrop{
+    pointer-events: all;
+    visibility: visible;
+    opacity: 1;
+}
+
+menu{
+
+}
+
+menu ul{
+
+}
+menu ul li *{
+    min-width: 50px;
+    min-height: 50px;
+    float: left;
+}

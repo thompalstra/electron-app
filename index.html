@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Hello World!</title>
+        <link rel="stylesheet" href="assets/style/style.css"/>
+    </head>
+    <body>
+
+        <x-sidebar>
+            <ul>
+                <li>
+                    <a href="./views/profile/index.html">Profile</a>
+                </li>
+            </ul>
+        </x-sidebar>
+        <x-backdrop></x-backdrop>
+        <x-app>
+
+        </x-app>
+        <script>
+        var app;
+        var sidebar;
+        document.addEventListener('DOMContentLoaded', function(e){
+            app = document.querySelector('x-app');
+            sidebar = document.querySelector('x-sidebar');
+            app.url = './views/index.html';
+        })
+        document.addEventListener('click', function(event){
+            if( event.target.tagName.toLowerCase() == 'a' ){
+                event.preventDefault();
+                event.stopPropagation();
+                app.url = event.target.getAttribute('href');
+            } else if( closest = event.target.closest('a') ){
+                event.preventDefault();
+                event.stopPropagation();
+                app.url = closest.getAttribute('href');
+            }
+        })
+
+        class Backdrop extends HTMLElement{
+            constructor(){
+                super();
+                this.customAttributes = {
+                    show: false
+                };
+            }
+            connectedCallback(){
+                this.addEventListener('click', function(event){
+                    console.log(this.nextElementSibling);
+                    this.previousElementSibling.show = false;
+                })
+            }
+            set show( value ){
+                if( value === false ){
+                   this.removeAttribute('show');
+                   this.customAttributes.show = false;
+                } else {
+                    this.setAttribute('show', '');
+                    this.customAttributes.show = true;
+                }
+            }
+            get show( ){
+                return this.customAttributes.show;
+            }
+        }
+
+        class Sidebar extends HTMLElement{
+            constructor(){
+                super();
+                this.customAttributes = {
+                    show: false
+                };
+            }
+            connectedCallback(){
+                console.log('connected');
+            }
+            get show(){
+                return this.customAttributes.show;
+            }
+            set show( value ){
+                if( value === false ){
+                   this.removeAttribute('show');
+                   this.customAttributes.show = false;
+                } else {
+                    this.setAttribute('show', '');
+                    this.customAttributes.show = true;
+                }
+            }
+            toggle(){
+                console.log('set as', !this.hasAttribute('show'));
+                this.show = !this.hasAttribute('show');
+            }
+        }
+
+        class App extends HTMLElement{
+            constructor(){
+                super();
+                this.customAttributes = {
+                    url: null
+                };
+            }
+            connectedCallback(){
+                console.log('connected');
+            }
+
+            set url( value ){
+                var req = new XMLHttpRequest();
+                req.open('GET', value);
+                req.responseType = 'document';
+                req.onreadystatechange  = function( xhr ){
+                    if( this.req.readyState == 4 && this.req.status == 200 ){
+                        this.app.customAttributes.url = value;
+                        this.app.innerHTML = '';
+                        this.app.innerHTML = this.req.response.head.innerHTML + this.req.response.body.innerHTML;
+                        this.app.querySelectorAll('script').forEach(function(script){
+                            eval(script.innerHTML);
+                        })
+                    }
+                }.bind({
+                    req: req,
+                    app: this
+                })
+                req.onerror = function( err ){
+                    console.log('error', err);
+                }
+                req.send();
+            }
+            get url(){
+                return this.customAttributes.url;
+            }
+        }
+
+        if( typeof customElements == 'undefined' ){
+            document.createElement('x-app', App);
+            document.createElement('x-sidebar', Sidebar);
+            document.createElement('x-backdrop', Backdrop)
+        } else {
+            customElements.define('x-app', App);
+            customElements.define('x-sidebar', Sidebar);
+            customElements.define('x-backdrop', Backdrop);
+        }
+
+        document.addEventListener("click", function(event){
+            if( event.target.matches('[x-action]') ){
+                xActions[event.target.getAttribute('x-action')].call(this, null);
+            } else if( closest = event.target.closest('[x-action]') ){
+                xActions[closest.getAttribute('x-action')].call(this, null);
+            }
+        })
+
+        var xActions = {
+            sidebarToggle: function(){
+                sidebar.toggle();
+            }
+        };
+
+        </script>
+    </body>
+</html>
